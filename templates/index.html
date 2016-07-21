@@ -1,0 +1,154 @@
+<html>
+<head>
+    {% load staticfiles %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    
+    <link rel="stylesheet" src="static/css/zsg.css">
+    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <script>
+    var neighborhood_dict;
+    var map;
+    var markers = [];
+     $(document).ready(function() {
+            var escaped_json = '{{neighborhood_json}}';
+            var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
+
+            neighborhood_dict = JSON.parse(cleansed_json);
+
+        });
+        function initMap() {
+            var myLatLng = {lat: 47.6062, lng: -122.3321};
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 14,
+                center: myLatLng
+            });
+        };
+        function filter(property) {
+            return true;
+        };
+
+        function deleteMarkers() {
+            for (var i = 0; i < markers.length; i++) {
+                var marker = markers[i];
+                marker.setMap(null);
+            };
+        };
+
+        function neighborhoodClickHandler(neighborhood_div) {
+            deleteMarkers();
+
+            var id = $(neighborhood_div).attr('id');
+            var properties = neighborhood_dict[id].properties;
+
+            var count = 0.0;
+            var total_lat = 0.0;
+            var total_long = 0.0;
+            for (var i = 0; i < properties.length; i++) {
+                var property = properties[i];
+                if (filter(property)) {
+                    count++;
+                    var address = property.address;
+
+                    var latitude = parseFloat(property.latitude);
+                    total_lat += latitude;
+                    var longitude = parseFloat(property.longitude);
+                    total_long += longitude;
+
+                    var latlng = new google.maps.LatLng(latitude, longitude);
+
+                    addMarker(address, latlng, false);
+                }
+            };
+            if (count > 0) {
+
+                var avg_lat = total_lat / count;
+                var avg_long = total_long / count;
+
+                var latlng = new google.maps.LatLng(avg_lat, avg_long);
+
+                map.setCenter(latlng);
+
+            }
+        };
+
+        function addMarker(name, latlong, isNeighborhood) {
+            var marker;
+            if (isNeighborhood) {
+                marker = new google.maps.Marker({
+                    position: latlong,
+                    title: name,
+                    map: map
+                });
+            }
+            else {
+                marker = new google.maps.Marker({
+                    position: latlong,
+                    title: name,
+                    map: map
+                });
+            }
+            markers.push(marker);
+        }
+    </script>
+</head>
+
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#map {
+    height: 80%;
+    width: 100%;
+}
+</style>
+<h1>Hack Week Investor Product</h1>
+<div class='container'>
+    <div class='row'>
+        <div class='row'>
+            <!-- begin neighborhood tabs -->
+            <div class=col-sm-6>
+                <ul class="nav nav-tabs">
+                    <li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
+                        <ul class="dropdown-menu">
+                            {% for neighborhood in neighborhood_dict.values %}
+                                <li onclick="neighborhoodClickHandler({{neighborhood.id}})"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!-- end neighborhood tabs -->
+        </div>
+        <!-- begin neighborhood panes -->
+        <div class='row'>
+            <div class="tab-content">
+            {% for neighborhood in neighborhood_dict.values %}
+                    <div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
+                        <h2>{{neighborhood.name}}</h2>
+                        <p> some neighborhood specific stuff for {{neighborhood.name}}</p>
+                    </div>  
+            {% endfor %}
+            </div>
+        </div>
+        <!-- end neighborhood panes -->
+        <!-- begin map -->
+        <div class='col-sm-6 col-sm-offset-6'>
+            <body>
+                <div id="map"></div>
+
+                <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
+                </script>
+            </body>
+        </div>
+        <!-- end map -->
+    </div>
+
+</div>
+</html>
