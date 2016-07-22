@@ -80,10 +80,11 @@
 	 		center: seattle
 	 	});
 	 };
-
+	 // assumes 30 year fixed mortgage with 20% down at the current prevailing rate (pulled from pogo)
 	 function getMonthlyMortgage(price) {
 	 	var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
 		var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
+		return monthly_mortgage;
 	 };
 	// check whether a given property satisifes the user's filter metrics
 	function filter(property) {
@@ -109,9 +110,6 @@
 			var property_cash_flow = (property.restimate * 12) - property.yearly_taxes - (monthly_mortgage * 12);
 			
 			if (min_yearly_cash_flow > property_cash_flow) {
-				console.log('cash flow');
-				console.log(min_yearly_cash_flow);
-				console.log(property_cash_flow);
 				return false;
 			} 
 
@@ -123,9 +121,6 @@
 
 			var property_cash_on_cash = (property.restimate * 12 - property.yearly_taxes - monthly_mortgage * 12) / (property.price * .2);
 			if (min_cash_on_cash > property_cash_on_cash) {
-				console.log('cash on cash');
-				console.log(min_cash_on_cash);
-				console.log(property_cash_on_cash);
 				return false;
 			}
 		}
@@ -186,9 +181,6 @@
 
 		var latlng = new google.maps.LatLng(latitude, longitude);
 
-
-		
-
 		var marker = new google.maps.Marker({
 			position: latlng,
 			title: name,
@@ -201,7 +193,9 @@
 			content_string = '<div>Address: ' + property.address + '<br>';
 			content_string += 'Price: ' + formatToDollars(property.price) + '<br>';
 			content_string += 'Rent: ' + formatToDollars(property.restimate) + '<br>';
-			content_string += 'Yearly Cash Flow: ' + formatToDollars((parseInt(property.restimate) * 12) - parseInt(property.yearly_taxes) - parseInt((monthly_mortgage * 12)));
+
+			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
+			content_string += 'Yearly Cash Flow: ' + formatToDollars(cash_flow);
 			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Zillow Home Detail Page</a>';
 			infoWindow.close();
 

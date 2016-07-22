@@ -19,8 +19,8 @@ def home(request, *args, **kwargs):
     '''
     neighborhood_region_ids = [250050, 250206, 271849, 271990, 271987, 272001, 344018, 271963]
 
-    downtown_properties = [{'address' : 'fake address', 'latitude' : 47.6062, 'longitude' : -122.3321, 'price' : 150000, 'yearly_taxes' : 3000, 'restimate' : 3000, 'zpid' : 48725241}]
-    south_lake_properties = [{'address' : 'fake address 2', 'latitude' : 47.6222, 'longitude' : -122.3371,'price' : 200000, 'yearly_taxes' : 4000, 'restimate' : 2500, 'zpid' : 92570232}, 
+    downtown_properties = [{'address' : 'fake address', 'latitude' : 47.6062, 'longitude' : -122.3321, 'price' : 150000, 'yearly_taxes' : 3000, 'restimate' : 1400, 'zpid' : 48725241}]
+    south_lake_properties = [{'address' : 'fake address 2', 'latitude' : 47.6222, 'longitude' : -122.3371,'price' : 200000, 'yearly_taxes' : 4000, 'restimate' : 2200, 'zpid' : 92570232}, 
     {'address' : 'fake address 3', 'latitude' : 47.6252, 'longitude' : -122.3311, 'price' : 100000, 'yearly_taxes' : 1500, 'restimate' : 900, 'zpid' : 88877172}]
     neighborhood_list = [
         {'name' : 'Capitol Hill', 'id' : 'capitol_hill', 'properties' : [], 'neighborhood_attributes' : {}}, 
