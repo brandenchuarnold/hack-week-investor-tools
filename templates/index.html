@@ -23,7 +23,7 @@
 		$(document).ready(function() {
 		// create global info window that pops up when a property is clicked
 		infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
-		
+
 		// parse serialized json object containing neighborhood data
 		var escaped_json = '{{neighborhood_json}}';
 		var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
@@ -80,12 +80,13 @@
 	 		center: seattle
 	 	});
 	 };
+
+	 function getMonthlyMortgage(price) {
+	 	var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
+		var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
+	 };
 	// check whether a given property satisifes the user's filter metrics
 	function filter(property) {
-		var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
-		// M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1]
-		var monthly_mortgage = .8 * property.price * ((monthly_rate * Math.pow((1 + monthly_rate), 30)) / (Math.pow((1 + monthly_rate), 30) - 1));
-
 		if ($('#price').val() != '' && !$('#price').prop('disabled')) {
 			var max_price = parseFloat($('#price').val());
 			if (max_price < property.price) {
@@ -102,10 +103,13 @@
 		}
 
 		if ($('#cash_flow').val() != '' && !$('#cash_flow').prop('disabled')) {
+
+			var monthly_mortgage = getMonthlyMortgage(property.price);
 			var min_yearly_cash_flow = Number($('#cash_flow').val().replace(/[^0-9\.]+/g,""));
 			var property_cash_flow = (property.restimate * 12) - property.yearly_taxes - (monthly_mortgage * 12);
 			
 			if (min_yearly_cash_flow > property_cash_flow) {
+				console.log('cash flow');
 				console.log(min_yearly_cash_flow);
 				console.log(property_cash_flow);
 				return false;
@@ -115,8 +119,11 @@
 
 		if ($('#cash_on_cash').val() != '' && !$('#cash_on_cash').prop('disabled')) {
 			var min_cash_on_cash = parseFloat($('#cash_on_cash').val()) / 100.0;
+			var monthly_mortgage = getMonthlyMortgage(property.price);
+
 			var property_cash_on_cash = (property.restimate * 12 - property.yearly_taxes - monthly_mortgage * 12) / (property.price * .2);
 			if (min_cash_on_cash > property_cash_on_cash) {
+				console.log('cash on cash');
 				console.log(min_cash_on_cash);
 				console.log(property_cash_on_cash);
 				return false;
@@ -189,8 +196,7 @@
 		});
 
 		marker.addListener('click', function() {
-			var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
-			var monthly_mortgage = .8 * property.price * ((monthly_rate * Math.pow((1 + monthly_rate), 30)) / (Math.pow((1 + monthly_rate), 30) - 1));
+			var monthly_mortgage = getMonthlyMortgage(property.price);
 
 			content_string = '<div>Address: ' + property.address + '<br>';
 			content_string += 'Price: ' + formatToDollars(property.price) + '<br>';
