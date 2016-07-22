@@ -1,154 +1,296 @@
 <html>
 <head>
-    {% load staticfiles %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    
-    <link rel="stylesheet" src="static/css/zsg.css">
-    
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+	{% load staticfiles %}
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	
+	<link rel="stylesheet" src="static/css/zsg.css">
+	
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
-    <script>
-    var neighborhood_dict;
-    var map;
-    var markers = [];
-     $(document).ready(function() {
-            var escaped_json = '{{neighborhood_json}}';
-            var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
+	<script>
+		var neighborhood_dict;
+		var map;
+		var markers = [];
 
-            neighborhood_dict = JSON.parse(cleansed_json);
+		var default_price = '$200,000';
+		var default_cap_rate = '2%';
+		var default_cash_flow = '$2,000';
+		var default_cash_on_cash = '5%';	
+		var infoWindow;
 
-        });
-        function initMap() {
-            var myLatLng = {lat: 47.6062, lng: -122.3321};
+		$(document).ready(function() {
+		// create global info window that pops up when a property is clicked
+		infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
+		
+		// parse serialized json object containing neighborhood data
+		var escaped_json = '{{neighborhood_json}}';
+		var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
 
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 14,
-                center: myLatLng
-            });
-        };
-        function filter(property) {
-            return true;
-        };
+		neighborhood_dict = JSON.parse(cleansed_json);
 
-        function deleteMarkers() {
-            for (var i = 0; i < markers.length; i++) {
-                var marker = markers[i];
-                marker.setMap(null);
-            };
-        };
+		// initialize tooltips for filter form
+		var yearly_cash_flow = 'Total income - total expenses (including mortgage payment)';
+		$('#cash_flow').attr('title', yearly_cash_flow);
+		$('#cash_flow').tooltip({});
 
-        function neighborhoodClickHandler(neighborhood_div) {
-            deleteMarkers();
+		var cap_rate = 'Total income - total expenses (excluding mortgage payment) / offer price';
+		$("#cap_rate").attr('title', cap_rate);
+		$('#cap_rate').tooltip({});
 
-            var id = $(neighborhood_div).attr('id');
-            var properties = neighborhood_dict[id].properties;
+		var cash_on_cash = 'Total income - total expenses (including mortgage payment) / total capital expenditure';
+		$("#cash_on_cash").attr('title', cash_on_cash);
+		$('#cash_on_cash').tooltip({});
 
-            var count = 0.0;
-            var total_lat = 0.0;
-            var total_long = 0.0;
-            for (var i = 0; i < properties.length; i++) {
-                var property = properties[i];
-                if (filter(property)) {
-                    count++;
-                    var address = property.address;
+		// disable filter handler
+		$('#disable_filters').click(function(e) {
+			$('#price').prop('disabled', true)
+			$('#cash_flow').prop('disabled', true);
+			$('#cap_rate').prop('disabled', true);
+			$('#cash_on_cash').prop('disabled', true);
+			
+			$('#apply_filter').html('Enable Filters');
+		});
 
-                    var latitude = parseFloat(property.latitude);
-                    total_lat += latitude;
-                    var longitude = parseFloat(property.longitude);
-                    total_long += longitude;
+		$('#apply_filter').click(function(e) {
+			$('#price').prop('disabled', false)
+			$('#cash_flow').prop('disabled', false);
+			$('#cap_rate').prop('disabled', false);
+			$('#cash_on_cash').prop('disabled', false);
 
-                    var latlng = new google.maps.LatLng(latitude, longitude);
+			$('#apply_filter').html('Apply Filters');
+			
+		});
 
-                    addMarker(address, latlng, false);
-                }
-            };
-            if (count > 0) {
+		// block page refresh on form submit and apply filter to displayed properties
+		$("#filter_form").submit(function(e) {
+			e.preventDefault();
+			var active_pane = $('#neighborhood_panes').find(".active")[0];
+			neighborhoodClickHandler($(active_pane).attr('id'));
+		});
 
-                var avg_lat = total_lat / count;
-                var avg_long = total_long / count;
+	});
+	 // initialize google map centered on seattle
+	 function initMap() {
+	 	var seattle = {lat: 47.6062, lng: -122.3321};
 
-                var latlng = new google.maps.LatLng(avg_lat, avg_long);
+	 	map = new google.maps.Map(document.getElementById('map'), {
+	 		zoom: 14,
+	 		center: seattle
+	 	});
+	 };
+	// check whether a given property satisifes the user's filter metrics
+	function filter(property) {
+		var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
+		// M = P [ i(1 + i)^n ] / [ (1 + i)^n – 1]
+		var monthly_mortgage = .8 * property.price * ((monthly_rate * Math.pow((1 + monthly_rate), 30)) / (Math.pow((1 + monthly_rate), 30) - 1));
 
-                map.setCenter(latlng);
+		if ($('#price').val() != '' && !$('#price').prop('disabled')) {
+			var max_price = parseFloat($('#price').val());
+			if (max_price < property.price) {
+				return false;
+			}
+		}
 
-            }
-        };
+		if ($('#cap_rate').val() != '' && !$('#cap_rate').prop('disabled')) {
+			var min_cap_rate = parseFloat($('#cap_rate').val()) / 100.0;
+			var property_cap_rate = (property.restimate * 12 - property.yearly_taxes) / property.price;
+			if (min_cap_rate > property_cap_rate) {
+				return false;
+			}
+		}
 
-        function addMarker(name, latlong, isNeighborhood) {
-            var marker;
-            if (isNeighborhood) {
-                marker = new google.maps.Marker({
-                    position: latlong,
-                    title: name,
-                    map: map
-                });
-            }
-            else {
-                marker = new google.maps.Marker({
-                    position: latlong,
-                    title: name,
-                    map: map
-                });
-            }
-            markers.push(marker);
-        }
-    </script>
+		if ($('#cash_flow').val() != '' && !$('#cash_flow').prop('disabled')) {
+			var min_yearly_cash_flow = Number($('#cash_flow').val().replace(/[^0-9\.]+/g,""));
+			var property_cash_flow = (property.restimate * 12) - property.yearly_taxes - (monthly_mortgage * 12);
+			
+			if (min_yearly_cash_flow > property_cash_flow) {
+				console.log(min_yearly_cash_flow);
+				console.log(property_cash_flow);
+				return false;
+			} 
+
+		}
+
+		if ($('#cash_on_cash').val() != '' && !$('#cash_on_cash').prop('disabled')) {
+			var min_cash_on_cash = parseFloat($('#cash_on_cash').val()) / 100.0;
+			var property_cash_on_cash = (property.restimate * 12 - property.yearly_taxes - monthly_mortgage * 12) / (property.price * .2);
+			if (min_cash_on_cash > property_cash_on_cash) {
+				console.log(min_cash_on_cash);
+				console.log(property_cash_on_cash);
+				return false;
+			}
+		}
+
+
+		return true;
+	};
+	// delete all markers on the map each time a new neighborhood is selected
+	function deleteMarkers() {
+		for (var i = 0; i < markers.length; i++) {
+			var marker = markers[i];
+			marker.setMap(null);
+		};
+		markers = [];
+	};
+
+	// add the appropriate properties to the map each time a new neighborhood is selected
+	function neighborhoodClickHandler(id) {
+		deleteMarkers();
+
+		var properties = neighborhood_dict[id].properties;
+
+		var count = 0.0;
+		var total_lat = 0.0;
+		var total_long = 0.0;
+		for (var i = 0; i < properties.length; i++) {
+			var property = properties[i];
+			if (filter(property)) {
+				count++;
+
+				var latitude = parseFloat(property.latitude);
+				total_lat += latitude;
+				var longitude = parseFloat(property.longitude);
+				total_long += longitude;
+
+				addMarker(property);
+			}
+		};
+		if (count > 0) {
+
+			var avg_lat = total_lat / count;
+			var avg_long = total_long / count;
+
+			var latlng = new google.maps.LatLng(avg_lat, avg_long);
+
+			map.setCenter(latlng);
+
+		}
+	};
+	function formatToDollars(dollars) {
+		return '$' + dollars.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+	}
+
+	// add a marker to the map
+	function addMarker(property) {
+		var latitude = parseFloat(property.latitude)
+		var longitude = parseFloat(property.longitude)
+
+		var latlng = new google.maps.LatLng(latitude, longitude);
+
+
+		
+
+		var marker = new google.maps.Marker({
+			position: latlng,
+			title: name,
+			map: map
+		});
+
+		marker.addListener('click', function() {
+			var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
+			var monthly_mortgage = .8 * property.price * ((monthly_rate * Math.pow((1 + monthly_rate), 30)) / (Math.pow((1 + monthly_rate), 30) - 1));
+
+			content_string = '<div>Address: ' + property.address + '<br>';
+			content_string += 'Price: ' + formatToDollars(property.price) + '<br>';
+			content_string += 'Rent: ' + formatToDollars(property.restimate) + '<br>';
+			content_string += 'Yearly Cash Flow: ' + formatToDollars((parseInt(property.restimate) * 12) - parseInt(property.yearly_taxes) - parseInt((monthly_mortgage * 12)));
+			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Zillow Home Detail Page</a>';
+			infoWindow.close();
+
+			infoWindow.setContent(content_string);
+
+			infoWindow.open(map, marker);
+		});
+
+		markers.push(marker);
+	}
+</script>
 </head>
 
 <style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-}
-#map {
-    height: 80%;
-    width: 100%;
-}
+	html, body {
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
+	#map {
+		height: 60%;
+		width: 100%;
+	}
+	.right {
+		float: right;
+	}
 </style>
 <h1>Hack Week Investor Product</h1>
 <div class='container'>
-    <div class='row'>
-        <div class='row'>
-            <!-- begin neighborhood tabs -->
-            <div class=col-sm-6>
-                <ul class="nav nav-tabs">
-                    <li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
-                        <ul class="dropdown-menu">
-                            {% for neighborhood in neighborhood_dict.values %}
-                                <li onclick="neighborhoodClickHandler({{neighborhood.id}})"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-            <!-- end neighborhood tabs -->
-        </div>
-        <!-- begin neighborhood panes -->
-        <div class='row'>
-            <div class="tab-content">
-            {% for neighborhood in neighborhood_dict.values %}
-                    <div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
-                        <h2>{{neighborhood.name}}</h2>
-                        <p> some neighborhood specific stuff for {{neighborhood.name}}</p>
-                    </div>  
-            {% endfor %}
-            </div>
-        </div>
-        <!-- end neighborhood panes -->
-        <!-- begin map -->
-        <div class='col-sm-6 col-sm-offset-6'>
-            <body>
-                <div id="map"></div>
+	<div class='row'>
+		<!-- begin neighborhood tabs -->
+		<div class=col-sm-6>
+			<ul class="nav nav-tabs">
+				<li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
+					<ul class="dropdown-menu">
+						{% for neighborhood in neighborhood_dict.values %}
+						<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+						{% endfor %}
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<!-- end neighborhood tabs -->
+	</div>
+	<!-- begin neighborhood panes -->
+	<div class='row'>
+		<div class="tab-content col-sm-6" id='neighborhood_panes'>
+			{% for neighborhood in neighborhood_dict.values %}
+			<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
+				<h2>{{neighborhood.name}}</h2>
+				<p> some neighborhood specific stuff for {{neighborhood.name}}</p>
+			</div>  
+			{% endfor %}
+		</div>
+		<!-- begin filter form -->
+		<div class='col-sm-6'>
+			<form class="form" id='filter_form'>
+				<div class='col-sm-6'>
+					<div class="form-group">
+						<label for="price">Maximum Price</label>
+						<input type="text" class="form-control" id="price" value="$200,000">
+					</div>
+					<div class="form-group">
+						<label for="cap_rate">Minimum Cap Rate</label>
+						<input type="text" class="form-control" id="cap_rate" value="2%">
+					</div>
+					<button type="submit" class='btn btn-warning' id='disable_filters'>Disable Filters</button>
+				</div>
+				<div class='col-sm-6'>
+					<div class="form-group">
+						<label for="cash_flow">Minimum Yearly Cash Flow</label>
+						<input type="text" class="form-control" id="cash_flow" value="$2,000">
+					</div>
+					<div class="form-group">
+						<label for="cash_on_cash">Minimum Cash on Cash Return</label>
+						<input type="text" class="form-control" id="cash_on_cash" value="5%">
+					</div>
+					<button type="submit" class="btn btn-primary right" id='apply_filter'>Apply Filters</button>
+				</div>
+			</form>
+		</div>
+		<!-- end filter form -->
+	</div>
+	<!-- end neighborhood panes -->
+	<br>
+	<!-- begin map -->
+	<div class='col-sm-6 col-sm-offset-6'>
+		<body>
+			<div id="map"></div>
 
-                <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
-                </script>
-            </body>
-        </div>
-        <!-- end map -->
-    </div>
+			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
+			</script>
+		</body>
+	</div>
+	<!-- end map -->
 
 </div>
 </html>
