@@ -21,45 +21,46 @@
 		var infoWindow;
 
 		$(document).ready(function() {
-		// create global info window that pops up when a property is clicked
-		infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
+			// create global info window that pops up when a property is clicked
+			infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
 
-		// parse serialized json object containing neighborhood data
-		var escaped_json = '{{neighborhood_json}}';
-		var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
+			// parse serialized json object containing neighborhood data
+			var escaped_json = '{{neighborhood_json}}';
+			var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
 
-		neighborhood_dict = JSON.parse(cleansed_json);
+			neighborhood_dict = JSON.parse(cleansed_json);
 
-		// initialize tooltips for filter form
-		var yearly_cash_flow = 'Total income - total expenses (including mortgage payment)';
-		$('#cash_flow').attr('title', yearly_cash_flow);
-		$('#cash_flow').tooltip({});
+			// initialize tooltips for filter form
+			var yearly_cash_flow = 'Total income - total expenses (including mortgage payment)';
+			$('#cash_flow').attr('title', yearly_cash_flow);
+			$('#cash_flow').tooltip({});
 
-		var cap_rate = 'Total income - total expenses (excluding mortgage payment) / offer price';
-		$("#cap_rate").attr('title', cap_rate);
-		$('#cap_rate').tooltip({});
+			var cap_rate = 'Total income - total expenses (excluding mortgage payment) / offer price';
+			$("#cap_rate").attr('title', cap_rate);
+			$('#cap_rate').tooltip({});
 
-		var cash_on_cash = 'Total income - total expenses (including mortgage payment) / total capital expenditure';
-		$("#cash_on_cash").attr('title', cash_on_cash);
-		$('#cash_on_cash').tooltip({});
+			var cash_on_cash = 'Total income - total expenses (including mortgage payment) / total capital expenditure';
+			$("#cash_on_cash").attr('title', cash_on_cash);
+			$('#cash_on_cash').tooltip({});
 
-		// disable filter handler
-		$('#disable_filters').click(function(e) {
-			$('#price').prop('disabled', true)
-			$('#cash_flow').prop('disabled', true);
-			$('#cap_rate').prop('disabled', true);
-			$('#cash_on_cash').prop('disabled', true);
-			
-			$('#apply_filter').html('Enable Filters');
-		});
+			// disable filter handler
+			$('#disable_filters').click(function(e) {
+				$('#price').prop('disabled', true)
+				$('#cash_flow').prop('disabled', true);
+				$('#cap_rate').prop('disabled', true);
+				$('#cash_on_cash').prop('disabled', true);
+				
+				$('#apply_filter').html('Enable Filters');
+			});
 
-		$('#apply_filter').click(function(e) {
-			$('#price').prop('disabled', false)
-			$('#cash_flow').prop('disabled', false);
-			$('#cap_rate').prop('disabled', false);
-			$('#cash_on_cash').prop('disabled', false);
+			// enable/apply filter handler
+			$('#apply_filter').click(function(e) {
+				$('#price').prop('disabled', false)
+				$('#cash_flow').prop('disabled', false);
+				$('#cap_rate').prop('disabled', false);
+				$('#cash_on_cash').prop('disabled', false);
 
-			$('#apply_filter').html('Apply Filters');
+				$('#apply_filter').html('Apply Filters');
 			
 		});
 
@@ -83,13 +84,13 @@
 	 // assumes 30 year fixed mortgage with 20% down at the current prevailing rate (pulled from pogo)
 	 function getMonthlyMortgage(price) {
 	 	var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
-		var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
-		return monthly_mortgage;
+	 	var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
+	 	return monthly_mortgage;
 	 };
 	// check whether a given property satisifes the user's filter metrics
 	function filter(property) {
 		if ($('#price').val() != '' && !$('#price').prop('disabled')) {
-			var max_price = parseFloat($('#price').val());
+			var max_price = Number($('#price').val().replace(/[^0-9\.]+/g,""));
 			if (max_price < property.price) {
 				return false;
 			}
@@ -170,6 +171,7 @@
 
 		}
 	};
+
 	function formatToDollars(dollars) {
 		return '$' + dollars.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
 	}
@@ -190,8 +192,7 @@
 		marker.addListener('click', function() {
 			var monthly_mortgage = getMonthlyMortgage(property.price);
 
-			content_string = '<div>Address: ' + property.address + '<br>';
-			content_string += 'Price: ' + formatToDollars(property.price) + '<br>';
+			content_string = '<div>Price: ' + formatToDollars(property.price) + '<br>';
 			content_string += 'Rent: ' + formatToDollars(property.restimate) + '<br>';
 
 			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
@@ -216,7 +217,7 @@
 		padding: 0;
 	}
 	#map {
-		height: 60%;
+		height: 50%;
 		width: 100%;
 	}
 	.right {
@@ -240,8 +241,8 @@
 		</div>
 		<!-- end neighborhood tabs -->
 	</div>
-	<!-- begin neighborhood panes -->
 	<div class='row'>
+		<!-- begin neighborhood panes -->
 		<div class="tab-content col-sm-6" id='neighborhood_panes'>
 			{% for neighborhood in neighborhood_dict.values %}
 			<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
@@ -250,6 +251,7 @@
 			</div>  
 			{% endfor %}
 		</div>
+		<!-- end neighborhood panes -->
 		<!-- begin filter form -->
 		<div class='col-sm-6'>
 			<form class="form" id='filter_form'>
@@ -279,7 +281,6 @@
 		</div>
 		<!-- end filter form -->
 	</div>
-	<!-- end neighborhood panes -->
 	<br>
 	<!-- begin map -->
 	<div class='col-sm-6 col-sm-offset-6'>
