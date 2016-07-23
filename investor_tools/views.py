@@ -43,10 +43,10 @@ def get_fake_data():
 def get_real_data(neighborhoods):
 	neighborhood_dict = {}
 	for _id, name in neighborhoods.items():
-		neighborhood_attributes = json.loads(requests.get('localhost:5000/neighborhood_data/' + str(_id)).content)
+		neighborhood_attributes = json.loads(requests.get('http://localhost:5000/neighborhood_data/' + str(_id)).content)
 		neighborhood = {'name' : name, 'id' : name.lower().replace(' ', ''), 'neighborhood_attributes' : neighborhood_attributes}
 
-		property_list = json.loads(requests.get('localhost:5000/property_region/' + str(_id)).content)
+		property_list = json.loads(requests.get('http://localhost:5000/property_region/' + str(_id)).content)
 		formatted_properties = []
 
 		for _property in property_list['property_regions']:
