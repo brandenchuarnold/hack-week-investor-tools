@@ -48,11 +48,12 @@ def get_real_data(neighborhoods):
 
 		property_list = json.loads(requests.get('localhost:5000/property_region/' + str(id)).content)
 		formatted_properties = []
+
 		for property in property_list['property_regions']:
 			formatted_property = alias_sproc_output(property)
 			formatted_properties.append(formatted_property)
+		
 		neighborhood.update({'properties' : formatted_properties})
-
 		neighborhood_dict[name.lower().replace(' ', '_')] = neighborhood
 
 	return neighborhood_dict
