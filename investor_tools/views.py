@@ -40,6 +40,25 @@ def get_fake_data():
 
 	return neighborhood_dict
 
+def get_real_data(neighborhoods):
+	neighborhood_dict = {}
+	for id, name in neighborhoods:
+		neighborhood_attributes = json.loads(requests.get('localhost:5000/neighborhood_data/' + str(id)).content)
+		neighborhood = {'name' : name, 'id' : name.lower().replace(' ', ''), 'neighborhood_attributes' : neighborhood_attributes}
+
+		property_list = json.loads(requests.get('localhost:5000/property_region/' + str(id)).content)
+		formatted_properties = []
+		for property in property_list['property_regions']:
+			formatted_property = alias_sproc_output(property)
+			formatted_properties.append(formatted_property)
+		neighborhood.update({'properties' : formatted_properties})
+
+		neighborhood_dict[name.lower().replace(' ', '_')] = neighborhood
+
+	return neighborhood_dict
+		
+
+
 def get_mortgage_rate():
 	mortgageQuery = 'https://mortgageapi.develop.zillow.net/getCurrentRates?partnerId=RD-QNNRMHN'
 	response = requests.get(mortgageQuery).content
@@ -48,9 +67,10 @@ def get_mortgage_rate():
 	return mortgage_rate
 
 def home(request, *args, **kwargs):
-	neighborhood_region_ids = [250206, 250017, 250692, 252248, 250780, 250788, 272001, 271808, 251709, 250050]
+	neighborhoods = {250206 : 'Capitol Hill', 250017 : 'Ballard', 250692 : 'Freemont', 252248 : 'Wallingford', 
+	250780 : 'Green Lake', 250788 : 'Greenwood', 272001 : 'University District', 271808 : 'Belltown', 251709 : 'Ravenna', 250050 : 'Beacon Hill'}
 
-	neighborhood_dict = get_fake_data()
+	neighborhood_dict = get_real_data()
 	mortgage_rate = get_mortgage_rate()
 	neighborhood_dict['mortgage_rate'] = mortgage_rate
 
