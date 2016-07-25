@@ -3,9 +3,8 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-	
-	{% load staticfiles %}
-	<link rel="stylesheet" href="{% static "css/zsg.css" %}" type='text/css'>
+  <link href="http://static.develop.zillow.net/static-zsg/LATEST/static-zsg/zsg/zsg-core.css" type="text/css" rel="stylesheet" media="all">	
+  <link href="http://static.develop.zillow.net/static-zsg/LATEST/static-zsg/zsg/zsg-opt.css" type="text/css" rel="stylesheet" media="all">	
 
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
@@ -72,15 +71,13 @@
 			neighborhoodClickHandler($(active_pane).attr('id'));
 		});
 
-		neighborhoodClickHandler('capitol_hill');
-
 	});
 	 // initialize google map centered on seattle
 	 function initMap() {
 	 	var seattle = {lat: 47.6062, lng: -122.3321};
 
 	 	map = new google.maps.Map(document.getElementById('map'), {
-	 		zoom: 14,
+	 		zoom: 13,
 	 		center: seattle
 	 	});
 	 };
@@ -130,6 +127,8 @@
 				return false;
 			}
 		}
+
+
 		return true;
 	};
 	// delete all markers on the map each time a new neighborhood is selected
@@ -143,7 +142,6 @@
 
 	// add the appropriate properties to the map each time a new neighborhood is selected
 	function neighborhoodClickHandler(id) {
-		//$('#neighborhood_dropdown').removeClass('active');
 		deleteMarkers();
 
 		var properties = neighborhood_dict[id].properties;
@@ -230,78 +228,108 @@
 		float: right;
 	}
 </style>
-<h1>Hack Week Investor Product</h1>
-<div class='container'>
-	<div class='row'>
-		<!-- begin neighborhood tabs -->
-		<div class=col-sm-6>
-			<ul class="nav nav-tabs">
-				<li class="dropdown" id='neighborhood_dropdown'><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
-					<ul class="dropdown-menu">
-						{% for neighborhood in neighborhood_dict.values %}
-							{% if neighborhood.id %}
-								<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
-							{% endif %}
-						{% endfor %}
-					</ul>
-				</li>
+<body>
+  <div class="zsg-layout-width">
+    <div class="zsg-layout-content">
+      <h1 style="margin-top: 50px">
+        <i class="zsg-icon-zlogo" style="font-size: 35px; color: rgb(0, 116, 228); vertical-align: middle; margin-right: 5px;"></i>   
+        Zinvestor Tools
+      </h1>
+        <div class="zsg-g">
+          <div class="zsg-lg-1-2">
+            <!-- begin neighborhood tabs -->
+            <ul class="nav nav-tabs">
+              <li class="dropdown" id='neighborhood_dropdown'><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
+                <ul class="dropdown-menu">
+                  {% for neighborhood in neighborhood_dict.values %}
+                    {% if neighborhood.id %}
+                    <li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </li>
+            </ul>
+            <!-- end neighborhood tabs -->
+            <!-- begin neighborhood panes -->
+            <div class="tab-content" id='neighborhood_panes'>
+              {% for neighborhood in neighborhood_dict.values %}
+                <div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
+                  <h2>{{neighborhood.name}}</h2>
+			<ul class="list-group col-sm-9">
+				<li class="list-group-item alert alert-info" role="alert"><b>Renter Profile</b></li>
+				<li class='list-group-item'> Median Monthly Income: <span class='right'>${{  neighborhood.neighborhood_attributes.median_monthly_income }} </span></li>
+				<li class='list-group-item'>  Credit Score over 700: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_credit_score_over_700}}% </span></li>
+				<li class='list-group-item'>  Want a Long Term Lease: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</span></li>
+				<li class='list-group-item'>  Flexible Move In Date: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}%</span></li>
+				<li class='list-group-item'>  Want More than One Bed: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}%</span></li>
+				<li class='list-group-item'>  Contacts Per Rental Listing: <span class='right'>{{ neighborhood.neighborhood_attributes.num_contacts_per_rental}}</span></li>
+				<li class='list-group-item'>  Zindex: <span class='right'>{{ neighborhood.neighborhood_attributes.zindex}}</span></li>
 			</ul>
-		</div>
-		<!-- end neighborhood tabs -->
-	</div>
-	<div class='row'>
-		<!-- begin neighborhood panes -->
-		<div class="tab-content col-sm-6" id='neighborhood_panes'>
-			{% for neighborhood in neighborhood_dict.values %}
-				<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
-					<h2>{{neighborhood.name}}</h2>
-					<h3>Renter Profile: </h3>
-					<p> Median Monthly Income: ${{  neighborhood.neighborhood_attributes.median_monthly_income }} </p>
-					<p> Credit Score over 700: {{ neighborhood.neighborhood_attributes.percent_credit_score_over_700}}% </p>
-					<p> Want a Long Term Lease: {{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</p>
-					<p> Flexible Move In Date: {{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}% </p>
-					<p> Want More than One Bed: {{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}% </p>
-				</div>  
-			{% endfor %}
-		</div>
-		<!-- end neighborhood panes -->
-		<!-- begin filter form -->
-		<div class='col-sm-6'>
-			<form class="form" id='filter_form'>
-				<div class='col-sm-6'>
-					<div class="form-group">
-						<label for="price">Maximum Price</label>
-						<input type="text" class="form-control" id="price" value="$500,000">
-					</div>
-					<div class="form-group">
-						<label for="cap_rate">Minimum Cap Rate</label>
-						<input type="text" class="form-control" id="cap_rate" value="0%">
-					</div>
-					<button type="submit" class='btn btn-warning' id='disable_filters'>Disable Filters</button>
-				</div>
-				<div class='col-sm-6'>
-					<div class="form-group">
-						<label for="cash_flow">Minimum Yearly Cash Flow</label>
-						<input type="text" class="form-control" id="cash_flow" value="$0">
-					</div>
-					<div class="form-group">
-						<label for="cash_on_cash">Minimum Cash on Cash Return</label>
-						<input type="text" class="form-control" id="cash_on_cash" value="0%">
-					</div>
-					<button type="submit" class="btn btn-primary right" id='apply_filter'>Apply Filters</button>
-				</div>
-			</form>
-		</div>
-		<!-- end filter form -->
-	</div>
-	<!-- begin map -->
-	<div class='col-sm-6 col-sm-offset-6'>
-		<body>
-			<div id="map"></div>
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
-			</script>
-		</body>
-	</div>
-	<!-- end map -->
-</div>
+			</div>
+              {% endfor %}
+            </div>
+            <!-- end neighborhood panes -->
+          </div>
+        <div class="zsg-lg-1-2">
+          <!-- begin filter form -->
+          <div class="zsg-g">
+            <form class="zsg-form" id='filter_form'>
+              <div class='zsg-lg-1-2'>
+                <div class="form-group">
+                  <label for="price">Maximum Price</label>
+                  <input type="text" class="form-control" id="price" value="$500,000">
+                </div>
+                <div class="form-group">
+                  <label for="cap_rate">Minimum Cap Rate</label>
+                  <input type="text" class="form-control" id="cap_rate" value="0%">
+                </div>
+                <button type="submit" class="zsg-button zsg-button_ghost" id='disable_filters'>Disable Filters</button>
+              </div>
+              <div class='zsg-lg-1-2'>
+                <div class="form-group">
+                  <label for="cash_flow">Minimum Yearly Cash Flow</label>
+                  <input type="text" class="form-control" id="cash_flow" value="$0">
+                </div>
+                <div class="form-group">
+                  <label for="cash_on_cash">Minimum Cash on Cash Return</label>
+                  <input type="text" class="form-control" id="cash_on_cash" value="0%">
+                </div>
+                <button type="submit" class="zsg-button_primary right" id='apply_filter'>Apply Filters</button>
+              </div>
+            </form>
+          </div>
+          <!-- end filter form -->
+          <!-- begin map -->
+          <div>
+            <body>
+              <div id="map"></div>
+              <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
+              </script>
+            </body>
+          </div>
+          <!-- end map -->
+        </div>
+        <br>
+      </div>
+      </div>
+    </div>
+    <footer class="zsg-subfooter" style="margin-top: 30px;">
+      <div class="zsg-subfooter-content">
+        <div class="zsg-g">
+          <div class="zsg-lg-1-4 zsg-md-1-2 zsg-sm-1-1">
+            <h6 class="zsg-subfooter-header">Zillow Hackweek 12 Project</h6>
+          </div>
+          <div class="zsg-lg-1-4 zsg-md-1-2 zsg-sm-1-1"></div>
+          <div class="zsg-lg-1-4 zsg-md-1-2 zsg-sm-1-1">
+                <h6 class="zsg-subfooter-header">Team Members</h6>
+                <ul class="zsg-subfooter-linklist">
+                    <li><a>Rohan Alur | Branden Arnold | Calvin Hohener</a></li>
+                    <li><a>Lauren Bretz | Jia Pan | Oktavianus Ludiro</a></li>
+                    
+                </ul>
+            </div>
+      </div>
+    </footer>
+  </div>
+</body>
 </html>
