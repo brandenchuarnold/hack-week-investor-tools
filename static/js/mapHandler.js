@@ -1,4 +1,76 @@
- // assumes 30 year fixed mortgage with 20% down at the current prevailing rate (pulled from pogo)
+		var neighborhood_dict;
+		var map;
+		var markers = [];
+
+		var default_price = '$200,000';
+		var default_cap_rate = '2%';
+		var default_cash_flow = '$2,000';
+		var default_cash_on_cash = '5%';	
+		var infoWindow;
+
+		$(document).ready(function() {
+
+			// create global info window that pops up when a property is clicked
+			infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
+
+			// parse serialized json object containing neighborhood data
+			var escaped_json = '{{neighborhood_json}}';
+			var cleansed_json = escaped_json.replace(new RegExp('&quot;', 'g'), '\"');
+
+			neighborhood_dict = JSON.parse(cleansed_json);
+
+			// initialize tooltips for filter form
+			var yearly_cash_flow = 'Total income - total expenses (including mortgage payment)';
+			$('#cash_flow').attr('title', yearly_cash_flow);
+			$('#cash_flow').tooltip({});
+
+			var cap_rate = 'Total income - total expenses (excluding mortgage payment) / offer price';
+			$("#cap_rate").attr('title', cap_rate);
+			$('#cap_rate').tooltip({});
+
+			var cash_on_cash = 'Total income - total expenses (including mortgage payment) / total capital expenditure';
+			$("#cash_on_cash").attr('title', cash_on_cash);
+			$('#cash_on_cash').tooltip({});
+
+			// disable filter click handler
+			$('#disable_filters').click(function(e) {
+				$('#price').prop('disabled', true)
+				$('#cash_flow').prop('disabled', true);
+				$('#cap_rate').prop('disabled', true);
+				$('#cash_on_cash').prop('disabled', true);
+				
+				$('#apply_filter').html('Enable Filters');
+			});
+
+			// enable/apply filter click handler
+			$('#apply_filter').click(function(e) {
+				$('#price').prop('disabled', false)
+				$('#cash_flow').prop('disabled', false);
+				$('#cap_rate').prop('disabled', false);
+				$('#cash_on_cash').prop('disabled', false);
+
+				$('#apply_filter').html('Apply Filters');
+			
+		});
+
+		// block page refresh on form submit and apply filter to displayed properties
+		$("#filter_form").submit(function(e) {
+			e.preventDefault();
+			var active_pane = $('#neighborhood_panes').find(".active")[0];
+			neighborhoodClickHandler($(active_pane).attr('id'));
+		});
+
+	});
+	 // initialize google map centered on seattle
+	 function initMap() {
+	 	var seattle = {lat: 47.6062, lng: -122.3321};
+
+	 	map = new google.maps.Map(document.getElementById('map'), {
+	 		zoom: 14,
+	 		center: seattle
+	 	});
+	 };
+	 // assumes 30 year fixed mortgage with 20% down at the current prevailing rate (pulled from pogo)
 	 function getMonthlyMortgage(price) {
 	 	var monthly_rate = parseFloat(neighborhood_dict['mortgage_rate']) / (12.0 * 100.0);
 	 	var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
@@ -118,7 +190,7 @@
 
 			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
 			content_string += 'Yearly Cash Flow: ' + formatToDollars(cash_flow);
-			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Zillow Home Detail Page</a>';
+			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Home Detail Page</a>';
 			
 			infoWindow.close();
 

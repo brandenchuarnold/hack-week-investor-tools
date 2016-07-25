@@ -164,7 +164,7 @@
 				addMarker(property);
 			}
 		};
-		// recenter the map
+		// re-center the map
 		if (count > 0) {
 
 			var avg_lat = total_lat / count;
@@ -236,7 +236,7 @@
 		<!-- begin neighborhood tabs -->
 		<div class=col-sm-6>
 			<ul class="nav nav-tabs">
-				<li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
+				<li class="dropdown" id='neighborhood_dropdown'><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
 					<ul class="dropdown-menu">
 						{% for neighborhood in neighborhood_dict.values %}
 							<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
