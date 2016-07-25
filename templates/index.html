@@ -72,6 +72,8 @@
 			neighborhoodClickHandler($(active_pane).attr('id'));
 		});
 
+		neighborhoodClickHandler('capitol_hill');
+
 	});
 	 // initialize google map centered on seattle
 	 function initMap() {
@@ -128,8 +130,6 @@
 				return false;
 			}
 		}
-
-
 		return true;
 	};
 	// delete all markers on the map each time a new neighborhood is selected
@@ -143,6 +143,7 @@
 
 	// add the appropriate properties to the map each time a new neighborhood is selected
 	function neighborhoodClickHandler(id) {
+		//$('#neighborhood_dropdown').removeClass('active');
 		deleteMarkers();
 
 		var properties = neighborhood_dict[id].properties;
@@ -168,7 +169,7 @@
 
 			var avg_lat = total_lat / count;
 			var avg_long = total_long / count;
-			
+
 			var latlng = new google.maps.LatLng(avg_lat, avg_long);
 
 			map.setCenter(latlng);
@@ -260,8 +261,6 @@
 					<p> Want a Long Term Lease: {{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</p>
 					<p> Flexible Move In Date: {{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}% </p>
 					<p> Want More than One Bed: {{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}% </p>
-					<p> Need Parking : {{neighborhood.neighborhood_attributes.percent_need_parking}}%</p>
-					<p> Currently Own a Home : {{neighborhood.neighborhood_attributes.percent_own_current_home}}%</p>
 				</div>  
 			{% endfor %}
 		</div>
@@ -295,7 +294,6 @@
 		</div>
 		<!-- end filter form -->
 	</div>
-	<br>
 	<!-- begin map -->
 	<div class='col-sm-6 col-sm-offset-6'>
 		<body>
