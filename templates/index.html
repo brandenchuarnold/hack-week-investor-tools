@@ -5,7 +5,7 @@
 	
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 	
-	<link rel="stylesheet" src="static/css/zsg.css">
+	<link rel="stylesheet" href="css/zsg.css">
 	
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
@@ -21,6 +21,7 @@
 		var infoWindow;
 
 		$(document).ready(function() {
+
 			// create global info window that pops up when a property is clicked
 			infoWindow = new google.maps.InfoWindow({disableAutoPan: true});
 
@@ -149,6 +150,7 @@
 		var count = 0.0;
 		var total_lat = 0.0;
 		var total_long = 0.0;
+
 		for (var i = 0; i < properties.length; i++) {
 			var property = properties[i];
 			if (filter(property)) {
@@ -162,6 +164,7 @@
 				addMarker(property);
 			}
 		};
+		// recenter the map
 		if (count > 0) {
 
 			var avg_lat = total_lat / count;
@@ -199,7 +202,7 @@
 
 			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
 			content_string += 'Yearly Cash Flow: ' + formatToDollars(cash_flow);
-			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Zillow Home Detail Page</a>';
+			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Home Detail Page</a>';
 			
 			infoWindow.close();
 
@@ -236,7 +239,7 @@
 				<li class="dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
 					<ul class="dropdown-menu">
 						{% for neighborhood in neighborhood_dict.values %}
-						<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+							<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
 						{% endfor %}
 					</ul>
 				</li>
@@ -248,10 +251,10 @@
 		<!-- begin neighborhood panes -->
 		<div class="tab-content col-sm-6" id='neighborhood_panes'>
 			{% for neighborhood in neighborhood_dict.values %}
-			<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
-				<h2>{{neighborhood.name}}</h2>
-				<p> some neighborhood specific stuff for {{neighborhood.name}}</p>
-			</div>  
+				<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
+					<h2>{{neighborhood.name}}</h2>
+					<p> some neighborhood specific stuff for {{neighborhood.name}}</p>
+				</div>  
 			{% endfor %}
 		</div>
 		<!-- end neighborhood panes -->
@@ -289,12 +292,10 @@
 	<div class='col-sm-6 col-sm-offset-6'>
 		<body>
 			<div id="map"></div>
-
 			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiC_XvLeVa59a5tjRsL1Xfo0eE0zHJRG0&callback=initMap">
 			</script>
 		</body>
 	</div>
 	<!-- end map -->
-
 </div>
 </html>
