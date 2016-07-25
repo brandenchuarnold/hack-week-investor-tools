@@ -87,5 +87,5 @@ def home(request, *args, **kwargs):
 
 	context = {'neighborhood_dict' : neighborhood_dict, 'neighborhood_json' : json.dumps(neighborhood_dict)}
 
-	return render(request, "index.html", context)
+	return render(request, "index2.html", context)
 
