@@ -44,6 +44,11 @@ def get_real_data(neighborhoods):
 	neighborhood_dict = {}
 	for _id, name in neighborhoods.items():
 		neighborhood_attributes = json.loads(requests.get('http://localhost:5000/neighborhood_data/' + str(_id)).content)
+
+		for key, val in neighborhood_attributes['neighborhood_data'].items():
+			if key.startswith('percent'):
+				neighborhood_attributes['neighborhood_data'][key] = int(float(val) * 100)
+
 		neighborhood = {'name' : name, 'id' : name.lower().replace(' ', '_'), 'neighborhood_attributes' : neighborhood_attributes['neighborhood_data']}
 
 		property_list = json.loads(requests.get('http://localhost:5000/property_region/' + str(_id)).content)

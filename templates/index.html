@@ -168,7 +168,7 @@
 
 			var avg_lat = total_lat / count;
 			var avg_long = total_long / count;
-
+			
 			var latlng = new google.maps.LatLng(avg_lat, avg_long);
 
 			map.setCenter(latlng);
@@ -255,8 +255,8 @@
 				<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
 					<h2>{{neighborhood.name}}</h2>
 					<h3>Renter Profile: </h3>
-					<p> Median Monthly Income: ${{ neighborhood.neighborhood_attributes.median_monthly_income }} </p>
-					<p> Credit Score over 700: {{neighborhood.neighborhood_attributes.percent_credit_score_over_700}}% </p>
+					<p> Median Monthly Income: ${{  neighborhood.neighborhood_attributes.median_monthly_income }} </p>
+					<p> Credit Score over 700: {{ neighborhood.neighborhood_attributes.percent_credit_score_over_700}}% </p>
 					<p> Want a Long Term Lease: {{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</p>
 					<p> Flexible Move In Date: {{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}% </p>
 					<p> Want More than One Bed: {{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}% </p>
