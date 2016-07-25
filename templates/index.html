@@ -43,7 +43,7 @@
 			$("#cash_on_cash").attr('title', cash_on_cash);
 			$('#cash_on_cash').tooltip({});
 
-			// disable filter handler
+			// disable filter click handler
 			$('#disable_filters').click(function(e) {
 				$('#price').prop('disabled', true)
 				$('#cash_flow').prop('disabled', true);
@@ -53,7 +53,7 @@
 				$('#apply_filter').html('Enable Filters');
 			});
 
-			// enable/apply filter handler
+			// enable/apply filter click handler
 			$('#apply_filter').click(function(e) {
 				$('#price').prop('disabled', false)
 				$('#cash_flow').prop('disabled', false);
@@ -87,6 +87,8 @@
 	 	var monthly_mortgage = .8 * price * ((monthly_rate * Math.pow((1 + monthly_rate), 30 * 12)) / (Math.pow((1 + monthly_rate), 30 * 12) - 1));
 	 	return monthly_mortgage;
 	 };
+
+
 	// check whether a given property satisifes the user's filter metrics
 	function filter(property) {
 		if ($('#price').val() != '' && !$('#price').prop('disabled')) {
@@ -198,6 +200,7 @@
 			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
 			content_string += 'Yearly Cash Flow: ' + formatToDollars(cash_flow);
 			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Zillow Home Detail Page</a>';
+			
 			infoWindow.close();
 
 			infoWindow.setContent(content_string);

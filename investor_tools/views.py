@@ -61,17 +61,22 @@ def get_real_data(neighborhoods):
 
 
 def get_mortgage_rate():
-	mortgageQuery = 'https://mortgageapi.develop.zillow.net/getCurrentRates?partnerId=RD-QNNRMHN'
-	response = requests.get(mortgageQuery).content
-	mortgage_rate = json.loads(response)['rates']['default'].get('rate')
+	try:
+		mortgageQuery = 'https://mortgageapi.develop.zillow.net/getCurrentRates?partnerId=RD-QNNRMHN'
+		response = requests.get(mortgageQuery).content
+		mortgage_rate = json.loads(response)['rates']['default'].get('rate')
 
-	return mortgage_rate
+		return mortgage_rate
+
+	except KeyError:
+		return '4'
 
 def home(request, *args, **kwargs):
 	neighborhoods = {250206 : 'Capitol Hill', 250017 : 'Ballard', 250692 : 'Freemont', 252248 : 'Wallingford', 
 	250780 : 'Green Lake', 250788 : 'Greenwood', 272001 : 'University District', 271808 : 'Belltown', 251709 : 'Ravenna', 250050 : 'Beacon Hill'}
 
-	neighborhood_dict = get_real_data(neighborhoods)
+	#neighborhood_dict = get_real_data(neighborhoods)
+	neighborhood_dict = get_fake_data()
 	mortgage_rate = get_mortgage_rate()
 	neighborhood_dict['mortgage_rate'] = mortgage_rate
 
