@@ -239,7 +239,7 @@
 					<ul class="dropdown-menu">
 						{% for neighborhood in neighborhood_dict.values %}
 							{% if neighborhood.id %}
-							<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+								<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
 							{% endif %}
 						{% endfor %}
 					</ul>
@@ -254,7 +254,14 @@
 			{% for neighborhood in neighborhood_dict.values %}
 				<div id="{{neighborhood.id}}" class="tab-pane fade {%if forloop.first%}active in{% endif %}">
 					<h2>{{neighborhood.name}}</h2>
-					<p> some neighborhood specific stuff for {{neighborhood.name}}</p>
+					<h3>Renter Profile: </h3>
+					<p> Median Monthly Income: ${{ neighborhood.neighborhood_attributes.median_monthly_income }} </p>
+					<p> Credit Score over 700: {{neighborhood.neighborhood_attributes.percent_credit_score_over_700}}% </p>
+					<p> Want a Long Term Lease: {{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</p>
+					<p> Flexible Move In Date: {{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}% </p>
+					<p> Want More than One Bed: {{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}% </p>
+					<p> Need Parking : {{neighborhood.neighborhood_attributes.percent_need_parking}}%</p>
+					<p> Currently Own a Home : {{neighborhood.neighborhood_attributes.percent_own_current_home}}%</p>
 				</div>  
 			{% endfor %}
 		</div>
@@ -265,22 +272,22 @@
 				<div class='col-sm-6'>
 					<div class="form-group">
 						<label for="price">Maximum Price</label>
-						<input type="text" class="form-control" id="price" value="$200,000">
+						<input type="text" class="form-control" id="price" value="$500,000">
 					</div>
 					<div class="form-group">
 						<label for="cap_rate">Minimum Cap Rate</label>
-						<input type="text" class="form-control" id="cap_rate" value="2%">
+						<input type="text" class="form-control" id="cap_rate" value="0%">
 					</div>
 					<button type="submit" class='btn btn-warning' id='disable_filters'>Disable Filters</button>
 				</div>
 				<div class='col-sm-6'>
 					<div class="form-group">
 						<label for="cash_flow">Minimum Yearly Cash Flow</label>
-						<input type="text" class="form-control" id="cash_flow" value="$2,000">
+						<input type="text" class="form-control" id="cash_flow" value="$0">
 					</div>
 					<div class="form-group">
 						<label for="cash_on_cash">Minimum Cash on Cash Return</label>
-						<input type="text" class="form-control" id="cash_on_cash" value="5%">
+						<input type="text" class="form-control" id="cash_on_cash" value="0%">
 					</div>
 					<button type="submit" class="btn btn-primary right" id='apply_filter'>Apply Filters</button>
 				</div>
