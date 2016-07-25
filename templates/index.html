@@ -153,14 +153,13 @@
 
 		for (var i = 0; i < properties.length; i++) {
 			var property = properties[i];
+			count++;
+
+			var latitude = parseFloat(property.latitude);
+			total_lat += latitude;
+			var longitude = parseFloat(property.longitude);
+			total_long += longitude;
 			if (filter(property)) {
-				count++;
-
-				var latitude = parseFloat(property.latitude);
-				total_lat += latitude;
-				var longitude = parseFloat(property.longitude);
-				total_long += longitude;
-
 				addMarker(property);
 			}
 		};
@@ -239,7 +238,9 @@
 				<li class="dropdown" id='neighborhood_dropdown'><a data-toggle="dropdown" class="dropdown-toggle" href="#">Neighborhoods<b class="caret"></b></a>            
 					<ul class="dropdown-menu">
 						{% for neighborhood in neighborhood_dict.values %}
+							{% if neighborhood.id %}
 							<li onclick="neighborhoodClickHandler('{{neighborhood.id}}')"><a data-toggle="tab" href="#{{neighborhood.id}}">{{neighborhood.name}}</a></li>
+							{% endif %}
 						{% endfor %}
 					</ul>
 				</li>
