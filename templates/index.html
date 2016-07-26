@@ -158,7 +158,7 @@
 			total_lat += latitude;
 			var longitude = parseFloat(property.longitude);
 			total_long += longitude;
-			if (filter(property)) {
+			if (filter(property) && property.price) {
 				addMarker(property);
 			}
 		};
