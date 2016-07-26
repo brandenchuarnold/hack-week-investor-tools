@@ -265,9 +265,9 @@
 				<li class='list-group-item'>  Want a Long Term Lease: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_long_term_lease }}%</span></li>
 				<li class='list-group-item'>  Flexible Move In Date: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_flexible_move_in_date}}%</span></li>
 				<li class='list-group-item'>  Want More than One Bed: <span class='right'>{{ neighborhood.neighborhood_attributes.percent_more_than_one_bed}}%</span></li>
-				<li class='list-group-item'>  Contacts Per Rental Listing: <span class='right'>{{ neighborhood.neighborhood_attributes.num_contacts_per_rental}}</span></li>
-				<li class='list-group-item'>  Zindex: <span class='right'>{{ neighborhood.neighborhood_attributes.zindex}}</span></li>
+				<li class='list-group-item'>  Inquiries per Rental: <span class='right'>{{ neighborhood.neighborhood_attributes.num_contacts_per_rental}}</span></li>
 			</ul>
+			<img src='static/images/{{neighborhood.neighborhood_attributes.region_id}}.png' height="199px" width="303px"/>
 			</div>
               {% endfor %}
             </div>

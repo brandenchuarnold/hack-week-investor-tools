@@ -5,6 +5,7 @@ from django.shortcuts import render
 import json
 import requests
 import math
+from collections import OrderedDict
 
 def alias_sproc_output(sproc_output):
 	output = {}
@@ -77,10 +78,10 @@ def get_mortgage_rate():
 		return '4.5'
 
 def home(request, *args, **kwargs):
-	neighborhoods = {250206 : 'Capitol Hill', 250017 : 'Ballard', 250692 : 'Freemont', 252248 : 'Wallingford', 
+	neighborhoods = {250206 : 'Capitol Hill', 250017 : 'Ballard', 250692 : 'Fremont', 252248 : 'Wallingford', 
 	250780 : 'Green Lake', 250788 : 'Greenwood', 272001 : 'University District', 271808 : 'Belltown', 251709 : 'Ravenna', 250050 : 'Beacon Hill'}
 
-	neighborhood_dict = get_real_data(neighborhoods)
+	neighborhood_dict = OrderedDict(sorted(get_real_data(neighborhoods).items()))
 	mortgage_rate = get_mortgage_rate()
 	neighborhood_dict['mortgage_rate'] = mortgage_rate
 
