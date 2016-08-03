@@ -64,9 +64,8 @@ def get_real_data(neighborhoods):
 
 	return neighborhood_dict
 		
-
-
 def get_mortgage_rate():
+    '''
 	try:
 		mortgageQuery = 'https://mortgageapi.develop.zillow.net/getCurrentRates?partnerId=RD-QNNRMHN'
 		response = requests.get(mortgageQuery).content
@@ -76,6 +75,8 @@ def get_mortgage_rate():
 
 	except KeyError:
 		return '4.5'
+    '''
+    return 4.5
 
 def home(request, *args, **kwargs):
 	neighborhoods = {250206 : 'Capitol Hill', 250017 : 'Ballard', 250692 : 'Fremont', 252248 : 'Wallingford', 
