@@ -1,7 +1,8 @@
-# might also need to run django bootstrap to get up and running
+# Use virtualenv
 virtualenv venv
+# Activate virtualenv
 source venv/bin/activate
-pip install django
-pip install requests
+# Install django and requests
+pip install django; pip install requests
+# To run
 python manage.py runserver #runs the debug variant of the server
-
