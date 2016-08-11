@@ -203,7 +203,7 @@
 
 			var cash_flow = parseInt(property.restimate * 12) - parseInt(property.yearly_taxes) - parseInt(monthly_mortgage * 12);
 			content_string += 'Yearly Cash Flow: ' + formatToDollars(cash_flow);
-			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid/">Home Detail Page</a>';
+			content_string += '<br><a href="http://www.zillow.com/homes/' + property.zpid + '_zpid" target="_blank">Home Detail Page</a>';
 			
 			infoWindow.close();
 
